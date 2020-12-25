@@ -14,7 +14,7 @@ db = SQLAlchemy(app)
 def hello():
     return "hello from ceshiren.com"
 
-
+# 数据表
 class TestCase(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(80), unique=True, nullable=True)
@@ -70,7 +70,7 @@ class TestCaseService(Resource):
         db.session.commit()
         return 'ok'
 
-
+# Task增删改查
 class TaskService(Resource):
     def post(self):
         print("##########", request.json.get('caseName'))
