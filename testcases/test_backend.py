@@ -33,9 +33,9 @@ class TestBackend:
         r = requests.post(
             self.testtask_url,
             json={
-                'caseId': '1',
                 'name': f'task1 {datetime.now().isoformat()}',
-                'remark': ['1', '2', '3']
+                'remark': ['1', '2', '3'],
+                'caseName': f'Case {datetime.now().isoformat()}'
             }
         )
 
@@ -54,7 +54,7 @@ class TestBackend:
         r = requests.put(
             self.testtask_url,
             json={
-                'caseId': '1',
+                'id': '2',
                 'name': f'task1 {datetime.now().isoformat()}'
             }
         )

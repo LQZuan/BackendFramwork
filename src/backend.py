@@ -15,9 +15,6 @@ def hello():
     return "hello from ceshiren.com"
 
 
-# app.config['db']=[]
-
-
 class TestCase(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(80), unique=True, nullable=True)
@@ -26,6 +23,20 @@ class TestCase(db.Model):
 
     def __repr__(self):
         return '<TestCase %r>' % self.name
+
+
+class TestTasks(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    remark = db.Column(db.String(120), unique=True, nullable=True)
+
+    testcase_id = db.Column(db.Integer, db.ForeignKey('test_case.id'),
+                            nullable=False)
+    test_case = db.relationship('TestCase',
+                               backref=db.backref('test_tasks', lazy=True))
+
+    def __repr__(self):
+        return '<TestTasks %r>' % self.name
 
 
 class TestCaseService(Resource):
@@ -59,21 +70,14 @@ class TestCaseService(Resource):
         db.session.commit()
         return 'ok'
 
-class TestTasks(db.Model):
-    caseId = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True, nullable=False)
-    remark = db.Column(db.String(120), unique=True, nullable=True)
-
-    def __repr__(self):
-        return '<TestTasks %r>' % self.name
-
 
 class TaskService(Resource):
     def post(self):
+        print("##########", request.json.get('caseName'))
         testtask = TestTasks(
-            caseId=request.json.get('caseId'),
             name=request.json.get('name'),
-            remark=json.dumps(request.json.get('remark'))
+            remark=json.dumps(request.json.get('remark')),
+            test_case=TestCase(name=request.json.get('caseName'))
         )
         db.session.add(testtask)
         db.session.commit()
@@ -86,8 +90,8 @@ class TaskService(Resource):
         return 'ok'
 
     def put(self):
-        print(request.json.get('caseId'))
-        updatetask = TestTasks.query.get(request.json.get('caseId'))
+        print(request.json.get('id'))
+        updatetask = TestTasks.query.get(request.json.get('id'))
         print("################################", updatetask)
         updatetask.name = request.json.get('name')
         print("################################", updatetask.name)
@@ -97,9 +101,10 @@ class TaskService(Resource):
     def get(self):
         testtasks: List[TestTasks] = TestTasks.query.all()
         res = [{
-            'caseId': testtask.caseId,
+            'id': testtask.id,
             'name': testtask.name,
-            'remark': json.loads(testtask.remark)
+            'remark': json.loads(testtask.remark),
+            'testcase_id': testtask.testcase_id
         } for testtask in testtasks]
         return {
             'body': res
